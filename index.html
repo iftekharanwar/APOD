@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA Astronomy Picture of the Day</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: #cbd5e0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .media-container {
+            width: 100%;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        img, iframe {
+            max-width: 90%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px 5px rgba(255, 255, 255, 0.2);
+        }
+
+        .info, .search-container {
+            margin: 20px;
+            text-align: justify;
+        }
+
+        .search-container input[type="date"] {
+            padding: 5px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #4a5568;
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+
+        .search-container button {
+            padding: 5px 10px;
+            border-radius: 5px;
+            background-color: #2d3748;
+            border: 1px solid #4a5568;
+            color: #e2e8f0;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #4a5568;
+        }
+
+        #apodExplanation {
+            font-family: 'Roboto Slab', serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input type="date" id="searchDate" max="">
+        <button id="searchButton">Search</button>
+    </div>
+
+    <div class="media-container">
+        <h1 class="text-3xl font-bold">NASA Astronomy Picture of the Day</h1>
+        <div id="mediaDisplay"></div>
+        <div class="info">
+            <p id="apodTitle" class="text-xl font-bold"></p>
+            <p id="apodDate"></p>
+            <p id="apodExplanation"></p>
+        </div>
+    </div>
+    <script>
+        function displayMedia(type, url) {
+            var mediaHtml;
+            if (type === 'video') {
+                mediaHtml = `<iframe src="${url}" frameborder="0" allowfullscreen width='90%' height='500px'></iframe>`;
+            } else {
+                mediaHtml = `<img src="${url}" alt="Astronomy Picture of the Day">`;
+            }
+            $('#mediaDisplay').html(mediaHtml);
+        }
+
+        function fetchAPOD(date) {
+            $.ajax({
+                url: `https://api.nasa.gov/planetary/apod?api_key=mFc6aIYU9UgoWhzsTu4Ck0JLcospKlNbEaM0DayL&date=${date}`,
+                method: 'GET',
+                success: function(data) {
+                    displayMedia(data.media_type, data.media_type === 'video' ? data.url : data.hdurl);
+                    $('#apodTitle').text(data.title);
+                    $('#apodDate').text(data.date);
+                    $('#apodExplanation').text(data.explanation);
+                },
+                error: function() {
+                    alert('Error retrieving data or no data available for the selected date.');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            let today = new Date().toISOString().slice(0, 10);
+            $('#searchDate').attr('max', today);
+            fetchAPOD(today); 
+
+            $('#searchButton').click(function() {
+                var date = $('#searchDate').val();
+                if (date) {
+                    fetchAPOD(date);
+                } else {
+                    alert('Please select a date.');
+                }
+            });
+
+            $('#searchDate').keypress(function(e) {
+                if(e.which == 13) { 
+                    $('#searchButton').click(); 
+                }
+            });
+        });
+    </script>
+</body>
+</html>
